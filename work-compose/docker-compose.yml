@@ -13,6 +13,7 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+    container_name: nginx
     volumes:
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}
       - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
@@ -23,6 +24,7 @@ services:
       - "${NGINX_HOST_HTTPS_PORT}:443"
     depends_on:
       - php-fpm
+    restart: always
     networks:
       - work
 
@@ -44,6 +46,7 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+    container_name: php-fpm
     volumes:
       - ./php-fpm/php5.6.ini:/usr/local/etc/php/php.ini
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}
@@ -52,6 +55,7 @@ services:
       - "9000"
     ports:
       - "9000:9000"
+    restart: always
     networks:
       - work
     #    extra_hosts:

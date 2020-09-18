@@ -45,7 +45,7 @@ RUN set -eux; \
             --with-jpeg-dir=/usr/lib \
             --with-freetype-dir=/usr/include/freetype2; \
     docker-php-ext-install gd; \
-    docker-php-ext-install zip
+    docker-php-ext-install zip;
 
 # Install composer and add its bin to the PATH.
 #   http://getcomposer.org/installer    国外源
@@ -173,20 +173,14 @@ RUN if [ ${INSTALL_WORKMAN_REQUIRED} = true ]; then \
     docker-php-ext-install pcntl \
 ;fi
 
-ARG TZ=UTC
-ENV TZ ${TZ}
-
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ###########################################################################
 # final:
 ###########################################################################
 RUN set -xe; php -v | head -n 1
 
-COPY ./php-user.ini /usr/local/etc/php/conf.d/
+COPY ./php-user.ini /usr/local/etc/php/conf.d
 COPY ./php-fpm.conf /usr/local/etc/php-fpm.d/
-
-COPY ./conf/vimrc.local /etc/vim/
 
 USER root
 
@@ -201,41 +195,12 @@ ENV PUID ${PUID}
 ARG PGID=1000
 ENV PGID ${PGID}
 
-
-RUN groupadd -g ${PGID} www && \
-    useradd -u ${PUID} -g www -m www
-#RUN groupmod -o -g ${PGID} www && \
-#    usermod -o -u ${PUID} -g www
+RUN groupmod -o -g ${PGID} www-data && \
+    usermod -o -u ${PUID} -g www-data www-data
 
 # Configure locale.
 ARG LOCALE=POSIX
 ENV LC_ALL ${LOCALE}
-
-###########################################################################
-# User Aliases
-###########################################################################
-
-USER root
-
-COPY ./conf/aliases.sh /root/aliases.sh
-COPY ./conf/aliases.sh /home/www/aliases.sh
-
-RUN sed -i 's/\r//' /root/aliases.sh && \
-    sed -i 's/\r//' /home/www/aliases.sh && \
-    chown www:www /home/www/aliases.sh && \
-    echo "" >> ~/.bashrc && \
-    echo "# Load Custom Aliases" >> ~/.bashrc && \
-    echo "source ~/aliases.sh" >> ~/.bashrc && \
-	echo "" >> ~/.bashrc
-
-USER www
-
-RUN echo "" >> ~/.bashrc && \
-    echo "# Load Custom Aliases" >> ~/.bashrc && \
-    echo "source ~/aliases.sh" >> ~/.bashrc && \
-	  echo "" >> ~/.bashrc
-
-USER root
 
 WORKDIR /var/www
 
