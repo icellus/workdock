@@ -97,12 +97,13 @@ USER root
 ARG COMPOSER_INSTALLER_REPO
 ENV COMPOSER_INSTALLER_REPO ${COMPOSER_INSTALLER_REPO}
 
-RUN curl -s ${COMPOSER_INSTALLER_REPO} | php && \
+RUN curl -s $COMPOSER_INSTALLER_REPO | php && \
     mv composer.phar /usr/local/bin/composer && \
     echo "" >> ~/.bashrc && \
     echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> ~/.bashrc
 
 # Source the bash
+# todo 构建时可能提示command not found
 RUN . ~/.bashrc
 
 # Make sure that ~/.composer belongs to www
