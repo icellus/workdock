@@ -32,7 +32,7 @@ RUN set -eux; \
     pecl channel-update pecl.php.net && \
     groupadd -g ${PGID} www && \
     useradd -u ${PUID} -g www -m www && \
-    usermod -p "*" laradock -s /bin/bash && \
+    usermod -p "*" www -s /bin/bash && \
     apt-get install -yqq --no-install-recommends \
             apt-utils \
             curl \
@@ -68,17 +68,17 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 USER root
 
 COPY ./aliases.sh /root/aliases.sh
-COPY ./aliases.sh /home/laradock/aliases.sh
+COPY ./aliases.sh /home/www/aliases.sh
 
 RUN sed -i 's/\r//' /root/aliases.sh && \
-    sed -i 's/\r//' /home/laradock/aliases.sh && \
-    chown laradock:laradock /home/laradock/aliases.sh && \
+    sed -i 's/\r//' /home/www/aliases.sh && \
+    chown www:www /home/www/aliases.sh && \
     echo "" >> ~/.bashrc && \
     echo "# Load Custom Aliases" >> ~/.bashrc && \
     echo "source ~/aliases.sh" >> ~/.bashrc && \
 	  echo "" >> ~/.bashrc
 
-USER laradock
+USER www
 
 RUN echo "" >> ~/.bashrc && \
     echo "# Load Custom Aliases" >> ~/.bashrc && \
@@ -106,18 +106,17 @@ RUN if [ ${CHANGE_SOURCE} = true ]; then \
 # Source the bash
 RUN . ~/.bashrc
 
-# Make sure that ~/.composer belongs to laradock
+# Make sure that ~/.composer belongs to www
 RUN mkdir /home/www/.composer && chown -R www:www /home/www/.composer
-
-# Export composer vendor path
-RUN echo "" >> ~/.bashrc && \
-    echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> ~/.bashrc
 
 USER www
 
 # Export composer vendor path
 RUN echo "" >> ~/.bashrc && \
     echo 'export PATH="~/.composer/vendor/bin:$PATH"' >> ~/.bashrc
+
+# Source the bash
+RUN . ~/.bashrc
 
 RUN composer config -g repo.packagist composer https://mirrors.aliyun.com/composer
 
