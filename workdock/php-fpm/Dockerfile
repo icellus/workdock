@@ -3,6 +3,14 @@ FROM php:7.4-fpm
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
 
+ARG CHANGE_SOURCE=false
+RUN if [ ${CHANGE_SOURCE} = true ]; then \
+    # Change application source from deb.debian.org to aliyun source
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list && \
+    sed -i 's/security-cdn.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list \
+;fi
+
 # Start as root
 USER root
 
@@ -15,16 +23,6 @@ ARG PUID=1000
 ENV PUID ${PUID}
 ARG PGID=1000
 ENV PGID ${PGID}
-
-ARG CHANGE_SOURCE=false
-ARG UBUNTU_SOURCE
-COPY ./sources.sh /tmp/sources.sh
-
-RUN if [ ${CHANGE_SOURCE} = true ]; then \
-    chmod +x /tmp/sources.sh && \
-    /bin/sh -c /tmp/sources.sh && \
-    rm -rf /tmp/sources.sh \
-;fi
 
 RUN set -eux; \
     apt-get update; \
@@ -49,6 +47,7 @@ RUN set -eux; \
             vim \
             git \
             wget \
+            locales-all \
             procps;
 
 ###########################################################################
@@ -103,7 +102,7 @@ RUN curl -s $COMPOSER_INSTALLER_REPO | php && \
     echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> ~/.bashrc
 
 # Source the bash
-# todo 构建时可能提示command not found
+# todo 构建时可能提示 not found
 RUN . ~/.bashrc
 
 # Make sure that ~/.composer belongs to www
@@ -135,8 +134,6 @@ RUN set -eux; \
     if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
         # Install the PHP mcrypt extention
         docker-php-ext-install mcrypt; \
-        # Install the PHP msyqli extention
-        docker-php-ext-install mysqli; \
         # Install the PHP gd library
         docker-php-ext-configure gd \
                 --enable-gd-native-ttf \
@@ -153,6 +150,7 @@ RUN set -eux; \
         docker-php-ext-install gd ;\
         docker-php-ext-configure zip; \
     fi; \
+    docker-php-ext-install mysqli; \
     docker-php-ext-install zip; \
     docker-php-ext-install pdo_mysql;
 
@@ -283,7 +281,6 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm /var/log/lastlog /var/log/faillog
 
-# todo 语言的设置
 # Configure locale.
 ARG LOCALE=POSIX
 ENV LC_ALL ${LOCALE}
@@ -291,6 +288,7 @@ ENV LC_ALL ${LOCALE}
 ###########################################################################
 # composer global install function dump|dd
 ###########################################################################
+USER www
 
 RUN composer global require symfony/var-dumper
 
