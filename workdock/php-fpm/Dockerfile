@@ -3,25 +3,36 @@ FROM php:7.4-fpm
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
 
+# Start as root
+USER root
+
+###########################################################################
+# non-root user:
+###########################################################################
+
+# Add a non-root user to prevent files being created with root permissions on host machine.
+ARG PUID=1000
+ENV PUID ${PUID}
+ARG PGID=1000
+ENV PGID ${PGID}
+
 ARG CHANGE_SOURCE=false
+ARG UBUNTU_SOURCE
+COPY ./sources.sh /tmp/sources.sh
+
 RUN if [ ${CHANGE_SOURCE} = true ]; then \
-    # Change application source from deb.debian.org to aliyun source
-    sed -i 's/deb.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list && \
-    sed -i 's/security.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list && \
-    sed -i 's/security-cdn.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list \
+    chmod +x /tmp/sources.sh && \
+    /bin/sh -c /tmp/sources.sh && \
+    rm -rf /tmp/sources.sh \
 ;fi
 
-#
-#--------------------------------------------------------------------------
-# Software's Installation
-#--------------------------------------------------------------------------
-#
-# Installing tools and PHP extentions using "apt", "docker-php", "pecl",
-#
 RUN set -eux; \
     apt-get update; -yqq \
     apt-get upgrade -y; \
     pecl channel-update pecl.php.net && \
+    groupadd -g ${PGID} www && \
+    useradd -u ${PUID} -g www -m www && \
+    usermod -p "*" laradock -s /bin/bash && \
     apt-get install -yqq --no-install-recommends \
             apt-utils \
             curl \
@@ -39,6 +50,86 @@ RUN set -eux; \
             git \
             wget \
             procps;
+
+###########################################################################
+# Set Timezone
+###########################################################################
+
+ARG TZ=UTC
+ENV TZ ${TZ}
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+
+###########################################################################
+# User Aliases
+###########################################################################
+
+USER root
+
+COPY ./aliases.sh /root/aliases.sh
+COPY ./aliases.sh /home/laradock/aliases.sh
+
+RUN sed -i 's/\r//' /root/aliases.sh && \
+    sed -i 's/\r//' /home/laradock/aliases.sh && \
+    chown laradock:laradock /home/laradock/aliases.sh && \
+    echo "" >> ~/.bashrc && \
+    echo "# Load Custom Aliases" >> ~/.bashrc && \
+    echo "source ~/aliases.sh" >> ~/.bashrc && \
+	  echo "" >> ~/.bashrc
+
+USER laradock
+
+RUN echo "" >> ~/.bashrc && \
+    echo "# Load Custom Aliases" >> ~/.bashrc && \
+    echo "source ~/aliases.sh" >> ~/.bashrc && \
+	  echo "" >> ~/.bashrc
+
+###########################################################################
+# Composer:
+###########################################################################
+
+USER root
+
+# Install composer and add its bin to the PATH.
+#   http://getcomposer.org/installer    国外源
+#   https://install.phpcomposer.com/installer   国内源
+RUN if [ ${CHANGE_SOURCE} = true ]; then \
+        curl -s https://install.phpcomposer.com/installer | php && \
+    else \
+        curl -s http://getcomposer.org/installer | php && \
+    ;fi
+    mv composer.phar /usr/local/bin/composer && \
+    echo "" >> ~/.bashrc && \
+    echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> ~/.bashrc
+
+# Source the bash
+RUN . ~/.bashrc
+
+# Make sure that ~/.composer belongs to laradock
+RUN mkdir /home/www/.composer && chown -R www:www /home/www/.composer
+
+# Export composer vendor path
+RUN echo "" >> ~/.bashrc && \
+    echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> ~/.bashrc
+
+USER www
+
+# Export composer vendor path
+RUN echo "" >> ~/.bashrc && \
+    echo 'export PATH="~/.composer/vendor/bin:$PATH"' >> ~/.bashrc
+
+RUN composer config -g repo.packagist composer https://mirrors.aliyun.com/composer
+
+#
+#--------------------------------------------------------------------------
+# Software's Installation
+#--------------------------------------------------------------------------
+#
+# Installing tools and PHP extentions using "apt", "docker-php", "pecl",
+#
+
+USER root
 
 RUN set -eux; \
     # Install the PHP pdo_mysql extention
@@ -65,22 +156,6 @@ RUN set -eux; \
     fi; \
     docker-php-ext-install zip; \
     docker-php-ext-install pdo_mysql;
-
-# Install composer and add its bin to the PATH.
-#   http://getcomposer.org/installer    国外源
-#   https://install.phpcomposer.com/installer   国内源
-RUN if [ ${CHANGE_SOURCE} = true ]; then \
-        curl -s https://install.phpcomposer.com/installer | php && \
-    else \
-        curl -s http://getcomposer.org/installer | php && \
-    ;fi
-    echo "export PATH=${PATH}:/var/www/vendor/bin" >> ~/.bashrc && \
-    mv composer.phar /usr/local/bin/composer
-
-# Source the bash
-RUN . ~/.bashrc
-
-RUN composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
 
 ###########################################################################
 # xDebug:
@@ -181,6 +256,7 @@ RUN if [ ${INSTALL_PING} = true ]; then \
 
 ###########################################################################
 # workman required
+# todo event 扩展
 ###########################################################################
 USER root
 
@@ -193,10 +269,6 @@ RUN if [ ${INSTALL_WORKMAN_REQUIRED} = true ]; then \
 ###########################################################################
 # final:
 ###########################################################################
-ARG TZ=PRC
-ENV TZ ${TZ}
-
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN set -xe; php -v | head -n 1
 
@@ -212,48 +284,14 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm /var/log/lastlog /var/log/faillog
 
-# Configure non-root user.
-ARG PUID=1000
-ENV PUID ${PUID}
-ARG PGID=1000
-ENV PGID ${PGID}
-
-
-RUN groupadd -g ${PGID} www && \
-    useradd -u ${PUID} -g www -m www
-#RUN groupmod -o -g ${PGID} www && \
-#    usermod -o -u ${PUID} -g www
-
+# todo 语言的设置
 # Configure locale.
 ARG LOCALE=POSIX
 ENV LC_ALL ${LOCALE}
 
 ###########################################################################
-# User Aliases
+# composer global install function dump|dd
 ###########################################################################
-USER root
-
-COPY ./conf/aliases.sh /root/aliases.sh
-COPY ./conf/aliases.sh /home/www/aliases.sh
-
-RUN sed -i 's/\r//' /root/aliases.sh && \
-    sed -i 's/\r//' /home/www/aliases.sh && \
-    chown www:www /home/www/aliases.sh && \
-    echo "" >> ~/.bashrc && \
-    echo "# Load Custom Aliases" >> ~/.bashrc && \
-    echo "source ~/aliases.sh" >> ~/.bashrc && \
-	echo "" >> ~/.bashrc
-
-
-###########################################################################
-# composer install function dump|dd
-###########################################################################
-USER www
-
-RUN echo "" >> ~/.bashrc && \
-    echo "# Load Custom Aliases" >> ~/.bashrc && \
-    echo "source ~/aliases.sh" >> ~/.bashrc && \
-	  echo "" >> ~/.bashrc
 
 RUN composer global require symfony/var-dumper
 
