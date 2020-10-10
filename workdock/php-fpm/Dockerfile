@@ -42,7 +42,6 @@ RUN set -eux; \
 
 RUN set -eux; \
     # Install the PHP pdo_mysql extention
-    docker-php-ext-install pdo_mysql; \
     if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
         # Install the PHP mcrypt extention
         docker-php-ext-install mcrypt; \
@@ -54,22 +53,27 @@ RUN set -eux; \
                 --with-jpeg-dir=/usr/lib \
                 --with-freetype-dir=/usr/include/freetype2; \
         docker-php-ext-install gd; \
-        docker-php-ext-configure zip; \
+        docker-php-ext-configure zip --with-libzip; \
     else \
         # Install the PHP gd library
         docker-php-ext-configure gd \
                 --prefix=/usr \
                 --with-jpeg \
                 --with-freetype; \
-        docker-php-ext-install gd \
-    ;fi
-
+        docker-php-ext-install gd ;\
+        docker-php-ext-configure zip; \
+    fi; \
     docker-php-ext-install zip; \
+    docker-php-ext-install pdo_mysql;
 
 # Install composer and add its bin to the PATH.
 #   http://getcomposer.org/installer    国外源
 #   https://install.phpcomposer.com/installer   国内源
-RUN curl -s https://install.phpcomposer.com/installer | php && \
+RUN if [ ${CHANGE_SOURCE} = true ]; then \
+        curl -s https://install.phpcomposer.com/installer | php && \
+    else \
+        curl -s http://getcomposer.org/installer | php && \
+    ;fi
     echo "export PATH=${PATH}:/var/www/vendor/bin" >> ~/.bashrc && \
     mv composer.phar /usr/local/bin/composer
 
@@ -81,7 +85,6 @@ RUN composer config -g repo.packagist composer https://mirrors.aliyun.com/compos
 ###########################################################################
 # xDebug:
 ###########################################################################
-
 ARG INSTALL_XDEBUG=false
 
 RUN if [ ${INSTALL_XDEBUG} = true ]; then \
@@ -125,7 +128,6 @@ RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
 ###########################################################################
 # Xhprof:
 ###########################################################################
-
 ARG INSTALL_XHPROF=false
 
 RUN if [ ${INSTALL_XHPROF} = true ]; then \
@@ -157,7 +159,6 @@ RUN if [ ${INSTALL_XHPROF} = false ]; then \
 ###########################################################################
 # Opcache:
 ###########################################################################
-
 ARG INSTALL_OPCACHE=false
 
 RUN if [ ${INSTALL_OPCACHE} = true ]; then \
@@ -170,7 +171,6 @@ COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 ###########################################################################
 # ping:
 ###########################################################################
-
 USER root
 
 ARG INSTALL_PING=false
@@ -182,7 +182,6 @@ RUN if [ ${INSTALL_PING} = true ]; then \
 ###########################################################################
 # workman required
 ###########################################################################
-
 USER root
 
 ARG INSTALL_WORKMAN_REQUIRED=false
@@ -232,7 +231,6 @@ ENV LC_ALL ${LOCALE}
 ###########################################################################
 # User Aliases
 ###########################################################################
-
 USER root
 
 COPY ./conf/aliases.sh /root/aliases.sh
@@ -250,7 +248,6 @@ RUN sed -i 's/\r//' /root/aliases.sh && \
 ###########################################################################
 # composer install function dump|dd
 ###########################################################################
-
 USER www
 
 RUN echo "" >> ~/.bashrc && \
