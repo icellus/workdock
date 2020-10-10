@@ -76,14 +76,14 @@ RUN sed -i 's/\r//' /root/aliases.sh && \
     echo "" >> ~/.bashrc && \
     echo "# Load Custom Aliases" >> ~/.bashrc && \
     echo "source ~/aliases.sh" >> ~/.bashrc && \
-	  echo "" >> ~/.bashrc
+	echo "" >> ~/.bashrc
 
 USER www
 
 RUN echo "" >> ~/.bashrc && \
     echo "# Load Custom Aliases" >> ~/.bashrc && \
     echo "source ~/aliases.sh" >> ~/.bashrc && \
-	  echo "" >> ~/.bashrc
+	echo "" >> ~/.bashrc
 
 ###########################################################################
 # Composer:
@@ -97,7 +97,7 @@ USER root
 ARG COMPOSER_INSTALLER_REPO
 ENV COMPOSER_INSTALLER_REPO ${COMPOSER_INSTALLER_REPO}
 
-RUN curl -s https://install.phpcomposer.com/installer | php && \
+RUN curl -s ${COMPOSER_INSTALLER_REPO} | php && \
     mv composer.phar /usr/local/bin/composer && \
     echo "" >> ~/.bashrc && \
     echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> ~/.bashrc
