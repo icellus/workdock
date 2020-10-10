@@ -172,15 +172,14 @@ RUN if [ ${INSTALL_WORKMAN_REQUIRED} = true ]; then \
     # pcntl
     docker-php-ext-install pcntl \
 ;fi
-
-ARG TZ=UTC
+###########################################################################
+# final:
+###########################################################################
+ARG TZ=PRC
 ENV TZ ${TZ}
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-###########################################################################
-# final:
-###########################################################################
 RUN set -xe; php -v | head -n 1
 
 COPY ./php-user.ini /usr/local/etc/php/conf.d/
@@ -228,6 +227,11 @@ RUN sed -i 's/\r//' /root/aliases.sh && \
     echo "source ~/aliases.sh" >> ~/.bashrc && \
 	echo "" >> ~/.bashrc
 
+
+###########################################################################
+# composer install function dump|dd
+###########################################################################
+
 USER www
 
 RUN echo "" >> ~/.bashrc && \
@@ -235,7 +239,15 @@ RUN echo "" >> ~/.bashrc && \
     echo "source ~/aliases.sh" >> ~/.bashrc && \
 	  echo "" >> ~/.bashrc
 
+RUN composer global require symfony/var-dumper
+
+COPY ./function_dd.php /home/www/.composer
+
+RUN echo ", \"autoload\": {\"files\": [\"/home/www/.composer/function_dd.php\" ]}" >> /home/www/.composer/composer.json
+
 USER root
+
+RUN echo "\n auto_prepend_file=\"/home/www/.composer/vendor/autoload.php\"" >> /usr/local/etc/php/conf.d/php-user.ini
 
 WORKDIR /var/www
 
