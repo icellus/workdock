@@ -27,7 +27,7 @@ RUN if [ ${CHANGE_SOURCE} = true ]; then \
 ;fi
 
 RUN set -eux; \
-    apt-get update; -yqq \
+    apt-get update; \
     apt-get upgrade -y; \
     pecl channel-update pecl.php.net && \
     groupadd -g ${PGID} www && \
@@ -67,8 +67,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 USER root
 
-COPY ./aliases.sh /root/aliases.sh
-COPY ./aliases.sh /home/www/aliases.sh
+COPY ./conf/aliases.sh /root/aliases.sh
+COPY ./conf/aliases.sh /home/www/aliases.sh
 
 RUN sed -i 's/\r//' /root/aliases.sh && \
     sed -i 's/\r//' /home/www/aliases.sh && \
@@ -94,11 +94,10 @@ USER root
 # Install composer and add its bin to the PATH.
 #   http://getcomposer.org/installer    国外源
 #   https://install.phpcomposer.com/installer   国内源
-RUN if [ ${CHANGE_SOURCE} = true ]; then \
-        curl -s https://install.phpcomposer.com/installer | php && \
-    else \
-        curl -s http://getcomposer.org/installer | php && \
-    ;fi
+ARG COMPOSER_INSTALLER_REPO
+ENV COMPOSER_INSTALLER_REPO ${COMPOSER_INSTALLER_REPO}
+
+RUN curl -s https://install.phpcomposer.com/installer | php && \
     mv composer.phar /usr/local/bin/composer && \
     echo "" >> ~/.bashrc && \
     echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> ~/.bashrc
