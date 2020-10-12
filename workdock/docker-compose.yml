@@ -54,7 +54,7 @@ services:
     expose:
       - "9000"
     ports:
-      - "9100:9000"
+      - "9000:9000"
     restart: always
     networks:
       - workdock
