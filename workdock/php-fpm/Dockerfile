@@ -108,6 +108,8 @@ RUN curl -s $COMPOSER_INSTALLER_REPO | php && \
 # todo 构建时可能提示 not found
 RUN . ~/.bashrc
 
+RUN composer config -g repo.packagist composer https://mirrors.aliyun.com/composer
+
 # Make sure that ~/.composer belongs to www
 RUN mkdir /home/www/.composer && chown -R www:www /home/www/.composer
 
@@ -156,6 +158,19 @@ RUN set -eux; \
     docker-php-ext-install mysqli; \
     docker-php-ext-install zip; \
     docker-php-ext-install pdo_mysql;
+
+###########################################################################
+# intl
+###########################################################################
+
+ARG INSTALL_INTL=false
+
+RUN if [ ${INSTALL_INTL} = true ]; then \
+    # Install intl and requirements
+    apt-get install -y zlib1g-dev libicu-dev g++ && \
+    docker-php-ext-configure intl && \
+    docker-php-ext-install intl \
+;fi
 
 ###########################################################################
 # xDebug:
@@ -252,6 +267,29 @@ ARG INSTALL_PING=false
 
 RUN if [ ${INSTALL_PING} = true ]; then \
     apt-get -y install inetutils-ping \
+;fi
+
+###########################################################################
+# Protoc:
+###########################################################################
+
+ARG INSTALL_PROTOC=false
+ARG PROTOC_VERSION
+
+RUN if [ ${INSTALL_PROTOC} = true ]; then \
+  if [ ${PROTOC_VERSION} = "latest" ]; then \
+    REAL_PROTOC_VERSION=$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | \
+      sed -nr 's/.*"tag_name":\s?"v(.+?)".*/\1/p'); \
+  else \
+    REAL_PROTOC_VERSION=${PROTOC_VERSION}; \
+  fi && \
+  PROTOC_ZIP=protoc-${REAL_PROTOC_VERSION}-linux-x86_64.zip; \
+  curl -L -o /tmp/protoc.zip https://github.com/protocolbuffers/protobuf/releases/download/v${REAL_PROTOC_VERSION}/${PROTOC_ZIP} && \
+  unzip -q -o /tmp/protoc.zip -d /usr/local bin/protoc && \
+  unzip -q -o /tmp/protoc.zip -d /usr/local 'include/*' && \
+  rm -f /tmp/protoc.zip && \
+  chmod +x /usr/local/bin/protoc && \
+  chmod -R +r /usr/local/include/google \
 ;fi
 
 ###########################################################################
