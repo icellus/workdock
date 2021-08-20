@@ -1,9 +1,13 @@
+logs
+
+data
+
+.env
+
 .idea
 
-./www
+www
 
-./logs
+!www/index.html
 
-./data
-
-.DS_Store
+workchat

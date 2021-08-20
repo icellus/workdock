@@ -1,3 +1,2 @@
 *.conf
 !default.conf
-!pc-chat.conf
