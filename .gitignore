@@ -1,7 +1,9 @@
 .idea
 
-/www
+./www
 
-/logs
+./logs
+
+./data
 
 .DS_Store
