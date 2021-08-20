@@ -62,5 +62,28 @@ services:
     networks:
       - workdock
 
+  ### PHP ##############################################
+  php-swoole:
+    container_name: php-swoole
+    build:
+      context: ./php-swoole
+      args:
+        - CHANGE_SOURCE=${CHANGE_SOURCE}
+        - COMPOSER_INSTALLER_REPO=${COMPOSER_INSTALLER_REPO}
+    volumes:
+      - ./php-swoole/php.ini:/usr/local/etc/php/php.ini
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}:rw
+    environment:
+      - TZ=${TZ}
+    ports:
+      - "9500:9500"
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    stdin_open: true
+    tty: true
+    networks:
+      - workchat
+
 networks:
   workdock:
