@@ -1,4 +1,4 @@
-FROM php:7.4-fpm
+FROM php:5.6-fpm
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
