@@ -126,7 +126,7 @@ RUN composer config -g repo.packagist composer https://mirrors.aliyun.com/compos
 USER root
 
 RUN set -eux; \
-    docker-php-ext-configure zip; \
+    docker-php-ext-configure zip --with-libzip; \
     docker-php-ext-install zip; \
     docker-php-ext-install mysqli; \
     # Install the PHP pdo_mysql extention

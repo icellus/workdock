@@ -126,16 +126,19 @@ RUN composer config -g repo.packagist composer https://mirrors.aliyun.com/compos
 USER root
 
 RUN set -eux; \
-    docker-php-ext-configure zip; \
+    docker-php-ext-configure zip --with-libzip; \
     docker-php-ext-install zip; \
     docker-php-ext-install mysqli; \
+
+    # Install the PHP mcrypt extention
+    docker-php-ext-install mcrypt; \
     # Install the PHP pdo_mysql extention
     docker-php-ext-install pdo_mysql; \
     # Install the PHP gd library
     docker-php-ext-configure gd \
-               --with-jpeg-dir=/usr/lib \
-               --with-webp-dir=/usr/lib \
-               --with-freetype-dir=/usr/include/freetype2; \
+            --enable-gd-native-ttf \
+            --with-jpeg-dir=/usr/lib \
+            --with-freetype-dir=/usr/include/freetype2; \
     docker-php-ext-install gd; \
     php -r 'var_dump(gd_info());'
 

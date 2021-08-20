@@ -52,7 +52,8 @@ RUN set -eux; \
             git \
             wget \
             locales-all \
-            procps;
+            procps; \
+    rm -rf /var/lib/apt/lists/*
 
 ###########################################################################
 # User Aliases
@@ -126,29 +127,19 @@ RUN composer config -g repo.packagist composer https://mirrors.aliyun.com/compos
 USER root
 
 RUN set -eux; \
-    # Install the PHP pdo_mysql extention
-    if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
-        # Install the PHP mcrypt extention
-        docker-php-ext-install mcrypt; \
-        # Install the PHP gd library
-        docker-php-ext-configure gd \
-                --enable-gd-native-ttf \
-                --with-jpeg-dir=/usr/lib \
-                --with-freetype-dir=/usr/include/freetype2; \
-        docker-php-ext-install gd; \
-        docker-php-ext-configure zip --with-libzip; \
-    else \
-        # Install the PHP gd library
-        docker-php-ext-configure gd \
-                --prefix=/usr \
-                --with-jpeg \
-                --with-freetype; \
-        docker-php-ext-install gd ;\
-        docker-php-ext-configure zip; \
-    fi; \
-    docker-php-ext-install mysqli; \
+    docker-php-ext-configure zip; \
     docker-php-ext-install zip; \
-    docker-php-ext-install pdo_mysql;
+    docker-php-ext-install mysqli; \
+    # Install the PHP pdo_mysql extention
+    docker-php-ext-install pdo_mysql; \
+    # Install the PHP gd library
+    docker-php-ext-configure gd \
+            --prefix=/usr \
+            --with-jpeg \
+            --with-webp \
+            --with-freetype; \
+    docker-php-ext-install gd; \
+    php -r 'var_dump(gd_info());'
 
 ###########################################################################
 # intl
