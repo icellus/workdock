@@ -13,7 +13,7 @@ services:
     volumes:
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}:rw
       - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
-      - ${NGINX_SITES_PATH}:/etc/nginx/vhost
+      - ${NGINX_SITES_PATH}:/etc/nginx/conf.d
     environment:
       - TZ=${TZ}
     ports:
@@ -49,6 +49,32 @@ services:
     networks:
       - workdock
 
+  ### MySQL-5.7 ################################################
+  mysql-5.7:
+    container_name: mysql-5.7
+    image: mysql:5.7
+    hostname: mysql-5.7
+    cap_add:
+      - SYS_NICE
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_PATH_HOST}/mysql-5.7:/var/lib/mysql
+      - ./mysql-5.7/conf.d:/etc/mysql/conf.d
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=${MYSQL_ROOT_PASSWORD} --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
+      retries: 5
+    networks:
+      - workdock
+
   ### Redis ################################################
   redis:
     container_name: redis
@@ -58,7 +84,7 @@ services:
     volumes:
       - ${DATA_PATH_HOST}/redis:/data
     ports:
-      - "${REDIS_PORT}:3306"
+      - "${REDIS_PORT}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}",  "ping"]
       interval: 1s
