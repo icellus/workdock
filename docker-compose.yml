@@ -104,6 +104,8 @@ services:
     volumes:
       - ./php-7.4/php7.4.ini:/usr/local/etc/php/php.ini
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}
+    ports:
+      - "8787:8787" # webman port
     restart: always
     networks:
       - workdock
