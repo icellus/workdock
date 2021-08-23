@@ -51,8 +51,7 @@ RUN set -eux; \
             git \
             wget \
             locales-all \
-            procps; \
-    rm -rf /var/lib/apt/lists/*
+            procps;
 
 ###########################################################################
 # User Aliases

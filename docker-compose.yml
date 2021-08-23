@@ -18,6 +18,7 @@ services:
       - TZ=${TZ}
     ports:
       - "80:80"
+      - "8000-8010:8000-8010"
     restart: always
     networks:
       - workdock
@@ -200,7 +201,7 @@ services:
     stdin_open: true
     tty: true
     networks:
-      - workchat
+      - workdock
 
 networks:
   workdock:

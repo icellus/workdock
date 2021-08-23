@@ -42,6 +42,7 @@ RUN set -eux; \
             libpq-dev \
             libjpeg-dev \
             libpng-dev \
+            libwebp-dev \
             libfreetype6-dev \
             libssl-dev \
             libmcrypt-dev \
@@ -52,8 +53,7 @@ RUN set -eux; \
             git \
             wget \
             locales-all \
-            procps; \
-    rm -rf /var/lib/apt/lists/*
+            procps;
 
 ###########################################################################
 # User Aliases

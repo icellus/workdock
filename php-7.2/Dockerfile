@@ -44,6 +44,7 @@ RUN set -eux; \
             libpng-dev \
             libfreetype6-dev \
             libssl-dev \
+            libwebp-dev \
             libmcrypt-dev \
             libzip-dev zip unzip \
             inetutils-ping \
@@ -51,8 +52,7 @@ RUN set -eux; \
             git \
             wget \
             locales-all \
-            procps; \
-    rm -rf /var/lib/apt/lists/*
+            procps;
 
 ###########################################################################
 # User Aliases
