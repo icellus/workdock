@@ -257,7 +257,7 @@ RUN if [ ${INSTALL_WORKMAN_REQUIRED} = true ]; then \
 RUN set -xe; php -v | head -n 1
 
 COPY ./php-user.ini /usr/local/etc/php/conf.d/
-COPY ./php-fpm.conf /usr/local/etc/php-fpm.d/
+COPY ./xphp-fpm.conf /usr/local/etc/php-fpm.d/
 
 COPY ./conf/vimrc.local /etc/vim/
 
