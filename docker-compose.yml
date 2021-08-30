@@ -76,9 +76,9 @@ services:
       - workdock
 
   ### PostgreSQL ###########################################
-  postgres:
+  postgresql:
     build:
-      context: ./postgres
+      context: ./postgresql
       args:
         - POSTGRES_VERSION=${POSTGRES_VERSION}
     volumes:
