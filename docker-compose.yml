@@ -97,7 +97,7 @@ services:
   ### Redis ################################################
   redis:
     container_name: redis
-    image: redis:${REDIS_VERSION}
+    image: redis:latest
     hostname: redis
     command: redis-server --requirepass ${REDIS_PASSWORD}
     volumes:
