@@ -128,7 +128,6 @@ RUN set -eux; \
     docker-php-ext-configure zip --with-libzip; \
     docker-php-ext-install zip; \
     docker-php-ext-install mysqli; \
-
     # Install the PHP mcrypt extention
     docker-php-ext-install mcrypt; \
     # Install the PHP pdo_mysql extention
@@ -268,7 +267,7 @@ USER root
 # Clean up
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    rm /var/log/lastlog /var/log/faillog
+    rm -f /var/log/lastlog /var/log/faillog
 
 WORKDIR /var/www
 
