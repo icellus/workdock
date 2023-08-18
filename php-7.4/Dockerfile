@@ -138,6 +138,7 @@ RUN set -eux; \
             --with-jpeg \
             --with-webp \
             --with-freetype; \
+    docker-php-ext-install bcmath \
     docker-php-ext-install gd; \
     php -r 'var_dump(gd_info());'
 
@@ -257,8 +258,6 @@ RUN if [ ${INSTALL_WORKMAN_REQUIRED} = true ]; then \
 ###########################################################################
 # todo xlswriter
 ###########################################################################
-
-# todo bcmath
 
 ###########################################################################
 # final:
