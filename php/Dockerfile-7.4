@@ -41,17 +41,12 @@ RUN set -eux; \
             locales-all \
             procps;
 
-# Installing tools and PHP extentions using "apt", "docker-php", "pecl",
-USER root
-
-RUN set -eux; \
-    pecl install -o -f redis xlswriter; \
+# Installing PHP extentions "docker-php", "pecl"
+RUN pecl install -o -f redis xlswriter; \
     docker-php-ext-configure zip; \
     docker-php-ext-install zip; \
     docker-php-ext-install mysqli; \
-    # Install the PHP pdo_mysql extention
     docker-php-ext-install pdo_mysql; \
-    # Install the PHP gd library
     docker-php-ext-configure gd \
             --prefix=/usr \
             --with-jpeg \
@@ -65,14 +60,9 @@ RUN set -eux; \
     docker-php-ext-enable xlswriter
 
 # intl  CI Framework require
-ARG INSTALL_INTL=false
-
-RUN if [ ${INSTALL_INTL} = true ]; then \
-    # Install intl and requirements
-    apt-get install -y zlib1g-dev libicu-dev g++ && \
+RUN apt-get install -y zlib1g-dev libicu-dev g++ && \
     docker-php-ext-configure intl && \
-    docker-php-ext-install intl \
-;fi
+    docker-php-ext-install intl
 
 # todo xDebug
 

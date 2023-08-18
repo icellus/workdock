@@ -42,37 +42,41 @@ RUN set -eux; \
             procps;
 
 # Installing tools and PHP extentions using "apt", "docker-php", "pecl",
-USER root
 
-RUN set -eux; \
-    pecl install -o -f redis xlswriter; \
-    docker-php-ext-configure zip; \
-    docker-php-ext-install zip; \
+RUN pecl install -o -f redis xlswriter; \
     docker-php-ext-install mysqli; \
-    # Install the PHP pdo_mysql extention
     docker-php-ext-install pdo_mysql; \
-    # Install the PHP gd library
-    docker-php-ext-configure gd \
-            --prefix=/usr \
-            --with-jpeg \
-            --with-webp \
-            --with-freetype; \
     docker-php-ext-install bcmath; \
-    docker-php-ext-install gd;  \
     docker-php-ext-install opcache; \
     docker-php-ext-install pcntl; \
     docker-php-ext-enable redis; \
     docker-php-ext-enable xlswriter
 
-# intl  CI Framework require
-ARG INSTALL_INTL=false
+RUN if [ $(php -r "echo PHP_VERSION_ID - PHP_RELEASE_VERSION;") = "70200" ]; then \
+      docker-php-ext-configure zip --with-libzip; \
+    else \
+      docker-php-ext-configure zip; \
+    fi; \
+    docker-php-ext-install zip
 
-RUN if [ ${INSTALL_INTL} = true ]; then \
-    # Install intl and requirements
-    apt-get install -y zlib1g-dev libicu-dev g++ && \
+RUN if   [ $(php -r "echo PHP_VERSION_ID - PHP_RELEASE_VERSION;") = "70400" ]; then \
+      docker-php-ext-configure gd \
+        --prefix=/usr \
+        --with-jpeg \
+        --with-webp \
+        --with-freetype; \
+    else \
+      docker-php-ext-configure gd \
+        --with-jpeg-dir=/usr/lib \
+        --with-webp-dir=/usr/lib \
+        --with-freetype-dir=/usr/include/freetype2; \
+    fi; \
+    docker-php-ext-install gd
+
+# intl  CI Framework require
+RUN apt-get install -y zlib1g-dev libicu-dev g++ && \
     docker-php-ext-configure intl && \
-    docker-php-ext-install intl \
-;fi
+    docker-php-ext-install intl
 
 # todo xDebug
 
