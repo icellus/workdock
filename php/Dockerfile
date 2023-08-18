@@ -119,15 +119,11 @@ COPY ./conf/xphp-fpm.conf /usr/local/etc/php-fpm.d/
 COPY ./conf/vimrc.local /etc/vim/
 COPY ./conf/aliases.sh /root/aliases.sh
 
-RUN cp ~/aliases.sh /home/www/aliases.sh && \
-    sed -i 's/\r//' /root/aliases.sh && \
-    sed -i 's/\r//' /home/www/aliases.sh && \
+RUN sed -i 's/\r//' /root/aliases.sh && \
     echo "" >> ~/.bashrc && \
     echo "source ~/aliases.sh" >> ~/.bashrc && \
 	echo "" >> ~/.bashrc && \
-    echo "" >> /home/www/.bashrc && \
-    echo "source ~/aliases.sh" >> /home/www/.bashrc && \
-    echo "" >> /home/www/.bashrc && \
+	cp ~/aliases.sh /home/www/aliases.sh && \
     chown www:www /home/www/aliases.sh
 
 
