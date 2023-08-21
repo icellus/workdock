@@ -151,60 +151,27 @@ services:
     container_name: php
     hostname: php
     build:
-      context: ./php-7.4
-      args:
-        - CHANGE_SOURCE=${CHANGE_SOURCE}
-        - COMPOSER_INSTALLER_REPO=${COMPOSER_INSTALLER_REPO}
-        - INSTALL_INTL=${PHP_FPM_INSTALL_INTL}
-        - INSTALL_PHPREDIS=${PHP_FPM_INSTALL_PHPREDIS}
-        - INSTALL_OPCACHE=${PHP_FPM_INSTALL_OPCACHE}
-        - INSTALL_WORKMAN_REQUIRED=${PHP_FPM_INSTALL_WORKMAN_REQUIRED}
-        - INSTALL_XDEBUG=${PHP_FPM_INSTALL_XDEBUG}
-        - INSTALL_XHPROF=${PHP_FPM_INSTALL_XHPROF}
-        - PUID=${PHP_FPM_PUID}
-        - PGID=${PHP_FPM_PGID}
-    volumes:
-      - ./php-7.4/php7.4.ini:/usr/local/etc/php/php.ini
-      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}
-    ports:
-      - "8787:8787" # webman port
-    restart: always
-    networks:
-      - workdock
-
-  ### PHP-7.3 ##############################################
-  php-t:
-    container_name: php-t
-    hostname: php-t
-    build:
       context: ./php
     volumes:
-      - ./php/conf/php7.4.ini:/usr/local/etc/php/php.ini
+      - ./php/conf/php-ini/php7.4.ini:/usr/local/etc/php/php.ini
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}
     restart: always
     networks:
       - workdock
 
-  ### PHP ##############################################
-  php-swoole:
-    container_name: php-swoole
+  ### PHP-7.3 demo ##############################################
+  php-7.3:
+    container_name: php-7.3
+    hostname: php-7.3
     build:
-      context: ./php-swoole
+      context: ./php
+      dockerfile: Dockerfile-multi
       args:
-        - CHANGE_SOURCE=${CHANGE_SOURCE}
-        - COMPOSER_INSTALLER_REPO=${COMPOSER_INSTALLER_REPO}
+        - PHP_VERSION=7.3
     volumes:
-      - ./php-swoole/php.ini:/usr/local/etc/php/php.ini
-      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}:rw
-    environment:
-      - TZ=${TZ}
-    ports:
-      - "9500:9500"
+      - ./php/conf/php7.3.ini:/usr/local/etc/php/php.ini
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}
     restart: always
-    cap_add:
-      - SYS_PTRACE
-    stdin_open: true
-    tty: true
     networks:
       - workdock
 
