@@ -52,8 +52,8 @@ RUN pecl install -o -f redis xlswriter; \
             --with-jpeg \
             --with-webp \
             --with-freetype; \
-    docker-php-ext-install bcmath; \
     docker-php-ext-install gd;  \
+    docker-php-ext-install bcmath; \
     docker-php-ext-install opcache; \
     docker-php-ext-install pcntl; \
     docker-php-ext-enable redis; \
