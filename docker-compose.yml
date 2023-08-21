@@ -113,24 +113,6 @@ services:
     networks:
       - workdock
 
-  ### REDISWEBUI ################################################
-  redis-webui:
-    container_name: redis-webui
-    build:
-      context: ./redis-webui
-    environment:
-      - ADMIN_USER=${REDIS_WEBUI_USERNAME}
-      - ADMIN_PASS=${REDIS_WEBUI_PASSWORD}
-      - REDIS_1_HOST=${REDIS_WEBUI_CONNECT_HOST}
-      - REDIS_1_PORT=${REDIS_WEBUI_CONNECT_PORT}
-      - REDIS_1_AUTH=${REDIS_PASSWORD}
-    networks:
-      - workdock
-    ports:
-      - "${REDIS_WEBUI_PORT}:80"
-    depends_on:
-      - redis
-
   ### node ##############################################
   node:
     container_name: node
