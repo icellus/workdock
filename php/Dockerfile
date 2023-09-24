@@ -43,6 +43,8 @@ RUN set -eux; \
 
 # Installing PHP extentions "docker-php", "pecl"
 RUN pecl install -o -f redis xlswriter; \
+    docker-php-ext-enable redis; \
+    docker-php-ext-enable xlswriter; \
     docker-php-ext-configure zip; \
     docker-php-ext-install zip; \
     docker-php-ext-install mysqli; \
@@ -55,9 +57,7 @@ RUN pecl install -o -f redis xlswriter; \
     docker-php-ext-install gd;  \
     docker-php-ext-install bcmath; \
     docker-php-ext-install opcache; \
-    docker-php-ext-install pcntl; \
-    docker-php-ext-enable redis; \
-    docker-php-ext-enable xlswriter
+    docker-php-ext-install pcntl;
 
 # intl  CI Framework require
 RUN apt-get install -y zlib1g-dev libicu-dev g++ && \
