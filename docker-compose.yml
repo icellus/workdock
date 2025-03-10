@@ -157,5 +157,18 @@ services:
     networks:
       - workdock
 
+### Certbot #########################################
+  certbot:
+    build:
+      context: ./certbot
+    volumes:
+      - ./data/certbot/certs/:/var/certs
+      - ./certbot/letsencrypt/:/var/www/letsencrypt
+    environment:
+      - CN="fake.domain.com"
+      - EMAIL="fake.email@gmail.com"
+    networks:
+      - workdock
+
 networks:
   workdock:
